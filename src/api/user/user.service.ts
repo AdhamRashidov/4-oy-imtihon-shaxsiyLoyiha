@@ -32,17 +32,17 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 			if (!existsAdmin) {
 				const admin = this.userRepo.create({
 					email: config.ADMIN.ADMIN_EMAIL,
-					hashedPassword: hashedPassword,
+					password: hashedPassword,
 					role: Roles.SUPERADMIN,
 				});
-				console.log({admin});
+				console.log({ admin });
 				await this.userRepo.save(admin);
 				console.log('Super admin created successfully');
 			}
 		} catch (error) {
 			throw new InternalServerErrorException('Error on creaeting super admin');
 		}
-	  }
+	}
 
 	async createUser(createUserDto: CreateUserDto, role: Roles) {
 		const { email, password } = createUserDto;
@@ -56,7 +56,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		const newUser = this.userRepo.create({
 			...createUserDto,
 			email,
-			hashedPassword,
+			password,
 			role,
 		});
 		await this.userRepo.save(newUser);
@@ -70,7 +70,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		});
 		const isMatchPassword = await this.crypto.decrypt(
 			password,
-			user?.hashedPassword || '',
+			user?.password || '',
 		);
 		if (!user || !isMatchPassword) {
 			throw new BadRequestException('Email or password incorrect');
@@ -99,7 +99,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 				throw new ConflictException('Email address already exists');
 			}
 		}
-		let hashedPassword = users?.hashedPassword;
+		let hashedPassword = users?.password;
 		if (user.role === Roles.ADMIN) {
 			if (password) {
 				hashedPassword = await this.crypto.encrypt(password);
@@ -108,8 +108,9 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		await this.userRepo.update(
 			{ id },
 			{
+				...updateUserDto,
 				email,
-				hashedPassword,
+				password
 			}
 		);
 		return this.findOneById(id);

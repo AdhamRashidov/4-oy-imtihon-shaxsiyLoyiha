@@ -13,7 +13,7 @@ export class UserEntity extends BaseEntity {
 	email: string;
 
 	@Column({ type: 'varchar' })
-	hashedPassword: string;
+	password: string;
 
 	@Column({ type: 'enum', enum: Roles })
 	role: Roles;

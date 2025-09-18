@@ -2,13 +2,15 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, UseGuard
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { userData } from 'src/common/document/swagger';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { RolesGuard } from 'src/common/guard/role.guard';
 import { AccessRoles } from 'src/common/decorator/roles.decorator';
 import { Roles } from 'src/common/enum';
 import type { Response } from 'express';
+import { GetRequestUser } from 'src/common/decorator/get-request-user.decorator';
+import type { IToken } from 'src/infrastructure/token/interface';
 
 @ApiTags('User')
 @Controller('user')
@@ -290,7 +292,7 @@ export class UserController {
 				id: true,
 				full_name: true,
 				email: true,
-				hashedPassword: true,
+				password: true,
 				role: true
 			}
 		});
@@ -340,7 +342,7 @@ export class UserController {
 				id: true,
 				full_name: true,
 				email: true,
-				hashedPassword: true,
+				password: true,
 				role: true
 			}
 		});
@@ -390,7 +392,7 @@ export class UserController {
 				id: true,
 				full_name: true,
 				email: true,
-				hashedPassword: true,
+				password: true,
 				role: true
 			}
 		});
@@ -536,17 +538,347 @@ export class UserController {
 	@ApiBearerAuth()
 	findOneReader(@Param('id') id: string) {
 		return this.userService.findOneById(id, {
-			where: {role: Roles.READER}
+			where: { role: Roles.READER }
 		});
 	}
 
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-		return this.userService.update(id, updateUserDto);
+
+
+
+
+	@ApiOperation({
+		summary: 'update admin by id'
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'e6b189ff-1d45-44e9-a252-5a0b48f3678f',
+		description: 'Adminni Id si shu yerga yoziladi'
+	})
+	@ApiBody({
+		schema: {
+			type: 'object',
+			properties: {
+				full_name: {
+					type: 'string',
+					format: 'string'
+				},
+				email: {
+					type: 'string',
+					format: 'email'
+				},
+				password: {
+					type: 'string',
+					format: 'string'
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Admin updated by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: {
+					...userData,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on updating admin by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, 'ID')
+	@Patch('admin/:id')
+	@ApiBearerAuth()
+	updateAdmin(
+		@GetRequestUser('user') user: IToken,
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() updateUserDto: UpdateUserDto
+	) {
+		return this.userService.updateUser(id, updateUserDto, user);
 	}
 
-	@Delete(':id')
-	remove(@Param('id') id: string) {
+
+
+
+	@ApiOperation({
+		summary: 'update librarian by id'
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'e6b189ff-1d45-44e9-a252-5a0b48f3678f',
+		description: 'Librarianni Id si shu yerga yoziladi'
+	})
+	@ApiBody({
+		schema: {
+			type: 'object',
+			properties: {
+				full_name: {
+					type: 'string',
+					format: 'string'
+				},
+				email: {
+					type: 'string',
+					format: 'email'
+				},
+				password: {
+					type: 'string',
+					format: 'string'
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Librarian updated by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: {
+					...userData,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on updating librarian by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN, 'ID')
+	@Patch('librarian/:id')
+	@ApiBearerAuth()
+	updateLibrarian(
+		@GetRequestUser('user') user: IToken,
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() updateUserDto: UpdateUserDto
+	) {
+		return this.userService.updateUser(id, updateUserDto, user);
+	}
+
+
+
+
+
+
+	@ApiOperation({
+		summary: 'update reader by id'
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'e6b189ff-1d45-44e9-a252-5a0b48f3678f',
+		description: 'Readerni Id si shu yerga yoziladi'
+	})
+	@ApiBody({
+		schema: {
+			type: 'object',
+			properties: {
+				full_name: {
+					type: 'string',
+					format: 'string'
+				},
+				email: {
+					type: 'string',
+					format: 'email'
+				},
+				password: {
+					type: 'string',
+					format: 'string'
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Reader updated by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: {
+					...userData,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on updating reader by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN, Roles.LIBRARIAN, 'ID')
+	@Patch('reader/:id')
+	@ApiBearerAuth()
+	updateReader(
+		@GetRequestUser('user') user: IToken,
+		@Param('id', ParseUUIDPipe) id: string,
+		@Body() updateUserDto: UpdateUserDto
+	) {
+		return this.userService.updateUser(id, updateUserDto, user);
+	}
+
+
+
+
+
+	@ApiOperation({
+		summary: 'Delete admin'
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'e6b189ff-1d45-44e9-a252-5a0b48f3678f',
+		description: 'Adminni Id si shu yerga yoziladi'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Admin deleted by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: {},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on deleting admin by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN)
+	@Delete('admin/:id')
+	@ApiBearerAuth()
+	removeAdmin(@Param('id', ParseUUIDPipe) id: string) {
+		return this.userService.deleteUser(id);
+	}
+
+
+
+
+
+	@ApiOperation({
+		summary: 'Delete librarian'
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'e6b189ff-1d45-44e9-a252-5a0b48f3678f',
+		description: 'librarianni Id si shu yerga yoziladi'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Admin deleted by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: {},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on deleting librarian by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN)
+	@Delete('librarian/:id')
+	@ApiBearerAuth()
+	removeLibrarian(@Param('id', ParseUUIDPipe) id: string) {
+		return this.userService.deleteUser(id);
+	}
+
+
+
+
+
+
+	@ApiOperation({
+		summary: 'Delete reader'
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'e6b189ff-1d45-44e9-a252-5a0b48f3678f',
+		description: 'readerni Id si shu yerga yoziladi'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Reader deleted by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: {},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on deleting reader by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN, Roles.LIBRARIAN)
+	@Delete('reader/:id')
+	@ApiBearerAuth()
+	remove(@Param('id', ParseUUIDPipe) id: string) {
 		return this.userService.deleteUser(id);
 	}
 }
