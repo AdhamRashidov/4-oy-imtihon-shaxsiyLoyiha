@@ -28,9 +28,9 @@ export const config: configType = {
 		ADMIN_PHONE: String(process.env.ADMIN_PHONE),
 	},
 	TOKEN: {
-		ACCESS_KEY: String(process.env.ACCESS_KEY),
-		ACCESS_TIME: String(process.env.ACCESS_TIME),
-		REFRESH_KEY: String(process.env.REFRESH_KEY),
-		REFRESH_TIME: String(process.env.REFRESH_TIME),
+		ACCESS_KEY: String(process.env.ACCESS_TOKEN_KEY),
+		ACCESS_TIME: String(process.env.ACCESS_TOKEN_TIME),
+		REFRESH_KEY: String(process.env.REFRESH_TOKEN_KEY),
+		REFRESH_TIME: String(process.env.REFRESH_TOKEN_TIME),
 	},
 }

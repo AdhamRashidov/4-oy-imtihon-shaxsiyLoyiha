@@ -1,4 +1,4 @@
-import { FindManyOptions } from 'typeorm';
+import { FindManyOptions, FindOneOptions } from 'typeorm';
 
 export interface ISuccess {
 	statusCode: number;
@@ -15,4 +15,4 @@ export interface IResponsePagination extends ISuccess {
 	to: number;
 }
 
-export interface IFindOptions<T> extends FindManyOptions<T> { }
+export interface IFindOptions<T> extends FindManyOptions<T>{ }

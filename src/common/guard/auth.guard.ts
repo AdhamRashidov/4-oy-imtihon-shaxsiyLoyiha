@@ -29,9 +29,6 @@ export class AuthGuard implements CanActivate {
 		}
 		try {
 			const data = this.jwt.verify(token, { secret: config.TOKEN.ACCESS_KEY });
-			if (data?.isActive != true) {
-				throw new ForbiddenException('User is not active');
-			}
 			req.user = data;
 			return true;
 		} catch (error) {

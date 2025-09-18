@@ -29,12 +29,4 @@ export class CreateUserDto {
 	@IsStrongPassword()
 	@IsNotEmpty()
 	password: string;
-
-	@ApiProperty({
-		enum: Roles,
-		description: 'Role of User',
-		example: 'READER'
-	})
-	@IsEnum(Roles)
-	role: Roles;
 }

@@ -29,7 +29,7 @@ export class Application {
 		const api = 'api/v1';
 		app.setGlobalPrefix(api);
 		const configSwagger = new DocumentBuilder()
-			.setTitle('4th month the last dance')
+			.setTitle('exam_4_month')
 			.setVersion('0.0.1')
 			.addBearerAuth({
 				type: 'http',

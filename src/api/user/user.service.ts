@@ -26,14 +26,14 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 	async onModuleInit(): Promise<void> {
 		try {
 			const existsAdmin = await this.userRepo.findOne({
-				where: { role: Roles.ADMIN },
+				where: { role: Roles.SUPERADMIN },
 			});
 			const hashedPassword = await this.crypto.encrypt(config.ADMIN.ADMIN_PASSWORD);
 			if (!existsAdmin) {
 				const admin = this.userRepo.create({
 					email: config.ADMIN.ADMIN_EMAIL,
 					hashedPassword: hashedPassword,
-					role: Roles.ADMIN,
+					role: Roles.SUPERADMIN,
 				});
 				console.log({admin});
 				await this.userRepo.save(admin);
@@ -44,7 +44,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		}
 	  }
 
-	async createUser(createUserDto: CreateUserDto) {
+	async createUser(createUserDto: CreateUserDto, role: Roles) {
 		const { email, password } = createUserDto;
 		const existsEmail = await this.userRepo.findOne({
 			where: { email },
@@ -54,8 +54,10 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		}
 		const hashedPassword = await this.crypto.encrypt(password);
 		const newUser = this.userRepo.create({
+			...createUserDto,
 			email,
 			hashedPassword,
+			role,
 		});
 		await this.userRepo.save(newUser);
 		return successRes(newUser, 201);

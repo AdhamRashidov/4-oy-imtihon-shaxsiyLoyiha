@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, UseGuards, UseInterceptors, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, UseGuards, UseInterceptors, Res, ParseUUIDPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { userData } from 'src/common/document/swagger';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { RolesGuard } from 'src/common/guard/role.guard';
@@ -16,6 +16,17 @@ export class UserController {
 	constructor(
 		private readonly userService: UserService
 	) { }
+
+	@ApiOperation({
+		summary: 'SuperAdmin Auth'
+	})
+	@Post('superadmin-signIn')
+	signinSuperAdmin(
+		@Body() signInDto: CreateUserDto,
+		@Res({ passthrough: true }) res: Response,
+	) {
+		return this.userService.signIn(signInDto, res);
+	}
 
 	@ApiOperation({
 		summary: 'create admin'
@@ -45,11 +56,11 @@ export class UserController {
 		},
 	})
 	@UseGuards(AuthGuard, RolesGuard)
-	@AccessRoles(Roles.ADMIN)
+	@AccessRoles(Roles.SUPERADMIN)
 	@Post('admin')
 	@ApiBearerAuth()
 	createAdmin(@Body() createUserDto: CreateUserDto) {
-		return this.userService.createUser(createUserDto);
+		return this.userService.createUser(createUserDto, Roles.ADMIN);
 	}
 
 
@@ -82,11 +93,11 @@ export class UserController {
 		},
 	})
 	@UseGuards(AuthGuard, RolesGuard)
-	@AccessRoles(Roles.LIBRARIAN)
+	@AccessRoles(Roles.ADMIN, Roles.SUPERADMIN)
 	@Post('librarian')
 	@ApiBearerAuth()
 	createLibrarian(@Body() createUserDto: CreateUserDto) {
-		return this.userService.createUser(createUserDto);
+		return this.userService.createUser(createUserDto, Roles.LIBRARIAN);
 	}
 
 
@@ -119,11 +130,11 @@ export class UserController {
 		},
 	})
 	@UseGuards(AuthGuard, RolesGuard)
-	@AccessRoles(Roles.READER)
+	@AccessRoles(Roles.ADMIN, Roles.SUPERADMIN)
 	@Post('reader')
 	@ApiBearerAuth()
 	createReader(@Body() createUserDto: CreateUserDto) {
-		return this.userService.createUser(createUserDto);
+		return this.userService.createUser(createUserDto, Roles.READER);
 	}
 
 
@@ -162,8 +173,8 @@ export class UserController {
 	) {
 		return this.userService.signIn(signInDto, res);
 	}
-		
-		
+
+
 	@ApiOperation({
 		summary: 'Sign in librarian',
 	})
@@ -199,8 +210,8 @@ export class UserController {
 	) {
 		return this.userService.signIn(signInDto, res);
 	}
-		
-		
+
+
 	@ApiOperation({
 		summary: 'Sign in reader',
 	})
@@ -235,28 +246,307 @@ export class UserController {
 		@Res({ passthrough: true }) res: Response,
 	) {
 		return this.userService.signIn(signInDto, res);
-	  }
+	}
+
+
+
+	@ApiOperation({
+		summary: 'Get all admins'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'All admins get successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: [{
+					...userData,
+				}],
+			},
+		}
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on get admins',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN)
+	@Get('all-admins')
+	@ApiBearerAuth()
+	findAllAdmins() {
+		return this.userService.findAll({
+			where: { role: Roles.ADMIN },
+			order: { createdAt: 'DESC' },
+			select: {
+				id: true,
+				full_name: true,
+				email: true,
+				hashedPassword: true,
+				role: true
+			}
+		});
+	}
 
 
 
 
-	// @Get()
-	// findAll() {
-	// 	return this.userService.findAll();
-	// }
 
-	// @Get(':id')
-	// findOne(@Param('id') id: string) {
-	// 	return this.userService.findOne(+id);
-	// }
+	@ApiOperation({
+		summary: 'Get all librarian'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'All librarians get successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: [{
+					...userData,
+				}],
+			},
+		}
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on get librarians',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN)
+	@Get('all-librarians')
+	@ApiBearerAuth()
+	findAllLibrarians() {
+		return this.userService.findAll({
+			where: { role: Roles.LIBRARIAN },
+			order: { createdAt: 'DESC' },
+			select: {
+				id: true,
+				full_name: true,
+				email: true,
+				hashedPassword: true,
+				role: true
+			}
+		});
+	}
 
-	// @Patch(':id')
-	// update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-	// 	return this.userService.update(+id, updateUserDto);
-	// }
 
-	// @Delete(':id')
-	// remove(@Param('id') id: string) {
-	// 	return this.userService.remove(+id);
-	// }
+
+
+
+	@ApiOperation({
+		summary: 'Get all readers'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'All readers get successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'success',
+				data: [{
+					...userData,
+				}],
+			},
+		}
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on get readers',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN, Roles.LIBRARIAN)
+	@Get('all-readers')
+	@ApiBearerAuth()
+	findAllReaders() {
+		return this.userService.findAll({
+			where: { role: Roles.READER },
+			order: { createdAt: 'DESC' },
+			select: {
+				id: true,
+				full_name: true,
+				email: true,
+				hashedPassword: true,
+				role: true
+			}
+		});
+	}
+
+
+
+
+	@ApiOperation({
+		summary: 'Get admin by id',
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'gugcqu89803-q-veqnvn3oqoi2oc21no-22s',
+		description: 'Adminni Id si shu yerga kiritiladi.'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Admin get by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'suucess',
+				data: {
+					...userData,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on get admin by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, 'ID')
+	@Get('admin/:id')
+	@ApiBearerAuth()
+	findOneAdmin(@Param('id', ParseUUIDPipe) id: string) {
+		return this.userService.findOneById(id, {
+			where: { role: Roles.ADMIN }
+		});
+	}
+
+
+
+
+	@ApiOperation({
+		summary: 'Get librarian by id',
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'gugcqu89803-q-veqnvn3oqoi2oc21no-22s',
+		description: 'kutubxonachini Id si shu yerga kiritiladi.'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Librarian get by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'suucess',
+				data: {
+					...userData,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on get librarian by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN, 'ID')
+	@Get('librarian/:id')
+	@ApiBearerAuth()
+	findOneLibrarian(@Param('id') id: string) {
+		return this.userService.findOneById(id, {
+			where: { role: Roles.LIBRARIAN }
+		});
+	}
+
+
+
+
+
+
+
+	@ApiOperation({
+		summary: 'Get reader by id',
+	})
+	@ApiParam({
+		name: 'id',
+		type: 'string',
+		example: 'gugcqu89803-q-veqnvn3oqoi2oc21no-22s',
+		description: 'Kitobxonni Id si shu yerga kiritiladi.'
+	})
+	@ApiResponse({
+		status: HttpStatus.OK,
+		description: 'Reader get by id successfully',
+		schema: {
+			example: {
+				statusCode: 200,
+				message: 'suucess',
+				data: {
+					...userData,
+				},
+			},
+		},
+	})
+	@ApiResponse({
+		status: HttpStatus.INTERNAL_SERVER_ERROR,
+		description: 'Error on get reader by id',
+		schema: {
+			example: {
+				statusCode: 500,
+				error: {
+					message: 'Internal server error',
+				},
+			},
+		},
+	})
+	@UseGuards(AuthGuard, RolesGuard)
+	@AccessRoles(Roles.SUPERADMIN, Roles.ADMIN, Roles.LIBRARIAN, 'ID')
+	@Get('reader/:id')
+	@ApiBearerAuth()
+	findOneReader(@Param('id') id: string) {
+		return this.userService.findOneById(id, {
+			where: {role: Roles.READER}
+		});
+	}
+
+	@Patch(':id')
+	update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+		return this.userService.update(id, updateUserDto);
+	}
+
+	@Delete(':id')
+	remove(@Param('id') id: string) {
+		return this.userService.deleteUser(id);
+	}
 }

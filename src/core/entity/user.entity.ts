@@ -15,7 +15,7 @@ export class UserEntity extends BaseEntity {
 	@Column({ type: 'varchar' })
 	hashedPassword: string;
 
-	@Column({ type: 'enum', enum: Roles, default: Roles.READER })
+	@Column({ type: 'enum', enum: Roles })
 	role: Roles;
 
 	@OneToMany(() => BorrowEntity, (borrow) => borrow.userId, {
