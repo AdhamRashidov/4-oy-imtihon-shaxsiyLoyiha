@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateBookDto {
 	@ApiProperty({
@@ -25,6 +25,8 @@ export class CreateBookDto {
 		description: 'yozilgan yili',
 		example: 1441
 	})
+	@IsInt()
+	@IsOptional()
 	published_year: number;
 
 	@ApiProperty({
@@ -32,5 +34,6 @@ export class CreateBookDto {
 		description: 'kitob mavjudligi yani bor yoki yoqligi',
 		example: false
 	})
+	@IsBoolean()
 	available: boolean;
 }

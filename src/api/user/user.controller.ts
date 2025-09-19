@@ -292,9 +292,10 @@ export class UserController {
 				id: true,
 				full_name: true,
 				email: true,
-				password: true,
+				hashedPassword: true,
 				role: true
-			}
+			},
+			relations: ['userBorrow', 'userBookHistory'],
 		});
 	}
 
@@ -342,9 +343,10 @@ export class UserController {
 				id: true,
 				full_name: true,
 				email: true,
-				password: true,
+				hashedPassword: true,
 				role: true
-			}
+			},
+			relations: ['userBorrow', 'userBookHistory'],
 		});
 	}
 
@@ -392,9 +394,10 @@ export class UserController {
 				id: true,
 				full_name: true,
 				email: true,
-				password: true,
+				hashedPassword: true,
 				role: true
-			}
+			},
+			relations: ['userBorrow', 'userBookHistory'],
 		});
 	}
 
@@ -441,7 +444,8 @@ export class UserController {
 	@ApiBearerAuth()
 	findOneAdmin(@Param('id', ParseUUIDPipe) id: string) {
 		return this.userService.findOneById(id, {
-			where: { role: Roles.ADMIN }
+			where: { role: Roles.ADMIN },
+			relations: ['userBorrow', 'userBookHistory'],
 		});
 	}
 
@@ -488,7 +492,8 @@ export class UserController {
 	@ApiBearerAuth()
 	findOneLibrarian(@Param('id') id: string) {
 		return this.userService.findOneById(id, {
-			where: { role: Roles.LIBRARIAN }
+			where: { role: Roles.LIBRARIAN },
+			relations: ['userBorrow', 'userBookHistory'],
 		});
 	}
 
@@ -538,7 +543,8 @@ export class UserController {
 	@ApiBearerAuth()
 	findOneReader(@Param('id') id: string) {
 		return this.userService.findOneById(id, {
-			where: { role: Roles.READER }
+			where: { role: Roles.READER },
+			relations: ['userBorrow', 'userBookHistory'],
 		});
 	}
 

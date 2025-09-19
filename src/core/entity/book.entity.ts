@@ -12,7 +12,7 @@ export class BookEntity extends BaseEntity {
 	author: string;
 
 	@Column({ type: 'int', nullable: true })
-	published_year?: number;
+	published_year: number;
 
 	@Column({ type: 'boolean', default: true })
 	available: boolean;

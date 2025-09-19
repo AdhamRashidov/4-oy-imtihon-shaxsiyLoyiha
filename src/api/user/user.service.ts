@@ -32,7 +32,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 			if (!existsAdmin) {
 				const admin = this.userRepo.create({
 					email: config.ADMIN.ADMIN_EMAIL,
-					password: hashedPassword,
+					hashedPassword: hashedPassword,
 					role: Roles.SUPERADMIN,
 				});
 				console.log({ admin });
@@ -56,7 +56,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		const newUser = this.userRepo.create({
 			...createUserDto,
 			email,
-			password,
+			hashedPassword,
 			role,
 		});
 		await this.userRepo.save(newUser);
@@ -70,7 +70,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		});
 		const isMatchPassword = await this.crypto.decrypt(
 			password,
-			user?.password || '',
+			user?.hashedPassword || '',
 		);
 		if (!user || !isMatchPassword) {
 			throw new BadRequestException('Email or password incorrect');
@@ -99,7 +99,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 				throw new ConflictException('Email address already exists');
 			}
 		}
-		let hashedPassword = users?.password;
+		let hashedPassword = users?.hashedPassword;
 		if (user.role === Roles.ADMIN) {
 			if (password) {
 				hashedPassword = await this.crypto.encrypt(password);
@@ -110,7 +110,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 			{
 				...updateUserDto,
 				email,
-				password
+				hashedPassword
 			}
 		);
 		return this.findOneById(id);

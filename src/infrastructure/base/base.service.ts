@@ -1,9 +1,7 @@
 import { HttpException } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { RepositoryPager } from '../pageination';
 import {
 	IFindOptions,
-	IResponsePagination,
 	ISuccess,
 } from '../response/success.interface';
 import { successRes } from '../response/success';
