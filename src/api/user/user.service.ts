@@ -59,6 +59,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 			hashedPassword,
 			role,
 		});
+		// delete newUser.password;
 		await this.userRepo.save(newUser);
 		return successRes(newUser, 201);
 	}
@@ -108,7 +109,7 @@ export class UserService extends BaseService<CreateUserDto, UpdateUserDto, UserE
 		await this.userRepo.update(
 			{ id },
 			{
-				...updateUserDto,
+				full_name: updateUserDto.full_name,
 				email,
 				hashedPassword
 			}

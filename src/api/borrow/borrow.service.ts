@@ -35,8 +35,11 @@ export class BorrowService {
 			}
 
 			const book = await manager.findOne(BookEntity, { where: { id: bookId } });
-			if (!book || !book.available) {
-				throw new BadRequestException('kitob topilmadi yoki yoq')
+			if (!book) {
+				throw new BadRequestException('kitob topilmadi')
+			}
+			if (!book.available) {
+				throw new BadRequestException('kitob allaqachon boshqa kitobxonga berilgan qaytarishini kuting.')
 			}
 			if (user.userBorrow.length >= 3) {
 				throw new BadRequestException('max books size limit 3')
@@ -52,7 +55,6 @@ export class BorrowService {
 				overdue: false,
 			});
 			await manager.save(borrow);
-
 			book.available = false;
 			await manager.save(book);
 
@@ -62,6 +64,7 @@ export class BorrowService {
 				action: Action.BORROW,
 				date: new Date(),
 			});
+
 			await manager.save(history);
 			return borrow;
 		});
